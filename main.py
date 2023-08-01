@@ -51,11 +51,12 @@ async def info(ctx):
 @bot.command()
 async def quest(ctx):
     print('good')
-    if ctx.guild.id != (768486039328391199 or 1132535095480287254):
-         return 
+    #if ctx.guild.id != (768486039328391199 or 1132535095480287254): 
+    #     return 
     serverId = ctx.guild.id
-    print('stellar')
+    print('verygood')
     global q
+    print("mega good")
     global a
     global av
     global qt
