@@ -20,7 +20,6 @@ def get_question():
     id = 1
     response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/random/")
     json_data = json.loads(response.text)
-    print(json_data[0]['title']+"\n"+json_data[0]['answer'])
     qs += "Question: \n"
     qs+=json_data[0]['title']+"\n"
     qt = json_data[0]['title']
