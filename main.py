@@ -20,6 +20,7 @@ def get_question():
     id = 1
     response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/random/")
     json_data = json.loads(response.text)
+    print(json_data[0]['title']+"\n"+json_data[0]['answer'])
     qs += "Question: \n"
     qs+=json_data[0]['title']+"\n"
     qt = json_data[0]['title']
@@ -57,6 +58,7 @@ async def quest(ctx):
     global av
     global qt
     q, a, av, qt = get_question()
+    print(qt, a)
     #view = ButtonView()
     #await view.wait()
     #view.add_item(discord.ui.Button(label="URL Button",style=discord.ButtonStyle.link,url="https://github.com/lykn"))
