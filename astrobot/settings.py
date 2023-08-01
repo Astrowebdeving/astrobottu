@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
+load_dotenv()
+dbpassword = os.getenv('dbpassword')
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -78,10 +81,10 @@ WSGI_APPLICATION = "astrobot.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "astrobotDEV",
-        "USER": 'postgres',
-        "PASSWORD": "Starforge46321SWAN#",
-        "HOST": 'localhost',
+        "NAME": "d1v7pl3dohqh10",
+        "USER": 'zvygpzaydovjbg',
+        "PASSWORD": dbpassword,
+        "HOST": 'ec2-34-226-11-94.compute-1.amazonaws.com',
         "PORT": "5432",
     }
 }
