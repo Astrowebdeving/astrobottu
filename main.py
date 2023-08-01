@@ -50,15 +50,20 @@ async def info(ctx):
 
 @bot.command()
 async def quest(ctx):
+    print('good')
     if ctx.guild.id != (768486039328391199 or 1132535095480287254):
          return 
     serverId = ctx.guild.id
+    print('stellar')
     global q
     global a
     global av
     global qt
+    print('epic')
     q, a, av, qt = get_question()
+    print('amazing')
     print(qt, a)
+
     #view = ButtonView()
     #await view.wait()
     #view.add_item(discord.ui.Button(label="URL Button",style=discord.ButtonStyle.link,url="https://github.com/lykn"))
