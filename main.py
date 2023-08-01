@@ -177,4 +177,4 @@ class ButtonView(discord.ui.View):
                   users.append(interaction.user.name)
         await interaction.response.send_message(textsend(text),ephemeral=True)
 token = os.getenv('envtoken')
-bot.run(token)
+bot.run("MTEzMjUzNTU5MDcyMjc0NDQ1MA.GqS_Fl.3bCJqnrnKljU-wwZbSu0uxkSNQ9Y4VjfBOupGA")
