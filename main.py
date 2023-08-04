@@ -16,6 +16,7 @@ bot = commands.Bot(command_prefix="a!", intents=intents)
 #client = Client(intents=intents)
 users = []
 def get_question():
+    ps = 0
     qs = ''
     id = 1
     response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/random/")
@@ -23,13 +24,14 @@ def get_question():
     qs += "Question: \n"
     qs+=json_data[0]['title']+"\n"
     qt = json_data[0]['title']
+    ps = json_data[0]['points']
     for item in json_data[0]['answer']: #loop through the answer section, below is fields"
         qs += str(id)+". "+item['answer']+'\n'
         if item['is_correct']:
             answerval = item['answer']
             answer = id
         id+=1
-    return(qs,answer, answerval, qt)
+    return(qs,answer, answerval, qt, ps)
 
 
 #@bot.command()
@@ -42,6 +44,10 @@ def get_question():
 #async def question(ctx):
 #    q, a = get_question()
 #    await ctx.send(q)
+
+
+
+
 @bot.command()
 async def info(ctx):
     print(ctx.guild.id)
@@ -49,6 +55,10 @@ async def info(ctx):
 
 @bot.command()
 async def quest(ctx):
+    if not check_running():
+         return
+    global questv 
+    questv = 1
     print('good')
     #if ctx.guild.id != (768486039328391199 or 1132535095480287254): 
     #     return 
@@ -60,7 +70,7 @@ async def quest(ctx):
     global av
     global qt
     print('epic')
-    q, a, av, qt = get_question()
+    q, a, av, qt, ps = get_question()
     print('amazing')
     print(qt, a)
 
@@ -71,7 +81,7 @@ async def quest(ctx):
     await asyncio.sleep(10)
     global users
     await ctx.send(f"The users: {users} are correct! The answer to {qt} is {av}!", ephemeral=False)
-    
+    questv = 0
     users = []
 
         #def check(m):
@@ -95,6 +105,13 @@ def textCheck(val, a, q):
             return truth, "You are incorrect."
 def textsend(b):
         return b
+@bot.check
+async def check_running():
+     global questv
+     if questv ==1:
+          return False
+     else:
+          return True
 class ButtonView(discord.ui.View):
     val = ""
     def __init__(self, *, timeout=10):
@@ -107,6 +124,7 @@ class ButtonView(discord.ui.View):
         global a
         global av
         global qt
+        global ps
         await asyncio.sleep(0.1)
         val = "1"
         user_id = interaction.user.id
@@ -129,6 +147,7 @@ class ButtonView(discord.ui.View):
         global a
         global av
         global qt
+        global ps
         val = "2"
         user_id = interaction.user.id
         if user_id in self.clicked_users:
@@ -149,6 +168,7 @@ class ButtonView(discord.ui.View):
         global a
         global av
         global qt
+        global ps
         val = "3"
         user_id = interaction.user.id
         if user_id in self.clicked_users:
@@ -169,6 +189,7 @@ class ButtonView(discord.ui.View):
         global a
         global av
         global qt
+        global ps
         val = "4"
         user_id = interaction.user.id
         if user_id in self.clicked_users:
