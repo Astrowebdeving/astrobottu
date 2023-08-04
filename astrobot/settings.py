@@ -81,10 +81,10 @@ WSGI_APPLICATION = "astrobot.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "d1v7pl3dohqh10",
-        "USER": 'zvygpzaydovjbg',
-        "PASSWORD": "5595398460cfc9a413f238fcbb51935bc698b0eb78f73caa2383b513efc4302a",
-        "HOST": 'ec2-34-226-11-94.compute-1.amazonaws.com',
+        "NAME": "dcp140fdl1dd2c",
+        "USER": 'rhuhdredobaluh',
+        "PASSWORD": "1a98b889c4fefeb94b8974f48d8ec122ab40639f458ca289175bd9937a8289fd",
+        "HOST": 'ec2-34-238-201-192.compute-1.amazonaws.com',
         "PORT": "5432",
     }
 }
