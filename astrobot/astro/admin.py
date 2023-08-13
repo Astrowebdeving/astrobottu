@@ -36,3 +36,14 @@ class AnswerAdmin(admin.ModelAdmin):
         'is_correct',
         'question'
     ]
+@admin.register(models.Qusers)
+class QusersAdmin(admin.ModelAdmin):
+    fields = [
+        "Username",
+        "Total Points",
+    ]
+    list_display = [
+        "Username",
+        "Total Points",
+        'updated_at',
+    ]

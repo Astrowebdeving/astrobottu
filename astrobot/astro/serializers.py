@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Question, Answer
+from .models import Question, Answer, Qusers
 
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,4 +16,11 @@ class RandomQuestionSerializer(serializers.ModelSerializer):
         model = Question 
         fields = [
             'title', 'points', 'answer',
+        ]
+
+class QusersReturn(serializers.ModelSerializer):
+    class Meta:
+        model = Qusers
+        fields = [
+            'Username', 'Total Points' 
         ]

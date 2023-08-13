@@ -33,6 +33,10 @@ def get_question():
         id+=1
     return(qs,answer, answerval, qt, ps)
 
+def parse_users():
+     response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/allusers/")
+     json_data = json.loads(response.text)
+     return json_data
 
 #@bot.command()
 #async def test(ctx, arg):
@@ -46,6 +50,12 @@ def get_question():
 #    await ctx.send(q)
 
 
+
+
+#@bot.check
+#async def check_user_exists(ctx):
+#     for i in 
+#     if ctx.user
 
 
 @bot.command()
