@@ -22,5 +22,5 @@ class QusersReturn(serializers.ModelSerializer):
     class Meta:
         model = Qusers
         fields = [
-            'Username', 'Total Points' 
+            'username', 'totalpoints' 
         ]

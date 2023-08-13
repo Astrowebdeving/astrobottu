@@ -10,11 +10,11 @@ class RandomQuestion(APIView):
         return Response(serializer.data)
 class AllUsers(APIView):
     def get(self, request, format=None, **kwargs):
-        users = Qusers.objects.filter().order_by("Total Points")
+        users = Qusers.objects.filter().order_by("totalpoints")
         serializerAU = QusersReturn(users, many = True)
         return Response(serializerAU.data)
 class TopUsers(APIView):
     def get(self, request, format=None, **kwargs):
-        users = Qusers.objects.filter().order_by("Total Points")[:10]
+        users = Qusers.objects.filter().order_by("totalpoints")[:10]
         serializerTU = QusersReturn(users,many = True)
         return Response(serializerTU.data)
