@@ -32,7 +32,7 @@ class Answer(models.Model):
         return self.answer
 
 class Qusers(models.Model):
-    username = models.CharField(_("Username"), max_length = 255)
-    totalpoints = models.BigIntegerField(_('TotalPoints'), default = 0)
+    username = models.CharField(_("username"), max_length = 255)
+    totalpoints = models.BigIntegerField(_('totalpoints'), default = 0)
     created_at = models.DateTimeField(_("Created"), auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated"), auto_now=True, auto_now_add=False)

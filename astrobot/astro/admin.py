@@ -39,11 +39,11 @@ class AnswerAdmin(admin.ModelAdmin):
 @admin.register(models.Qusers)
 class QusersAdmin(admin.ModelAdmin):
     fields = [
-        "Username",
-        "Total Points",
+        "username",
+        "totalpoints",
     ]
     list_display = [
-        "Username",
-        "Total Points",
+        "username",
+        "totalpoints",
         'updated_at',
     ]
