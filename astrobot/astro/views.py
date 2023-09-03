@@ -18,3 +18,12 @@ class TopUsers(APIView):
         users = Qusers.objects.filter().order_by("totalpoints")[:10]
         serializerTU = QusersReturn(users,many = True)
         return Response(serializerTU.data)
+    
+def upload_image(request):
+    if request.method == 'POST':
+        image = request.FILES.get('image')
+        if image:
+            binary_data = image.read()  # Read the binary data from the image file
+            Question.objects.create(optional_image=binary_data)
+    images = Question.objects.all()
+    return render(request, 'image_upload.html', {'images': images})

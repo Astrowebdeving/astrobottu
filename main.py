@@ -65,8 +65,8 @@ async def info(ctx):
 
 @bot.command()
 async def quest(ctx):
-    if not check_running():
-         return
+    #if not check_running():
+    #     return
     global questv 
     questv = 1
     print('good')
