@@ -9,10 +9,10 @@ import requests
 from time import sleep
 from discord import Client
 from discord.ui import view
-intents = discord.Intents.default()
-intents.message_content = True
+#intents = discord.Intents.default()
+#intents.message_content = True
 load_dotenv()
-bot = commands.Bot(command_prefix="a!", intents=intents)
+bot = commands.Bot(command_prefix="a!")#, intents=intents)
 #client = Client(intents=intents)
 users = []
 def get_question():
@@ -115,13 +115,13 @@ def textCheck(val, a, q):
             return truth, "You are incorrect."
 def textsend(b):
         return b
-@bot.check
-async def check_running():
-     global questv
-     if questv ==1:
-          return False
-     else:
-          return True
+#@bot.check
+#async def check_running():
+#     global questv
+#     if questv ==1:
+#          return False
+#     else:
+#          return True
 class ButtonView(discord.ui.View):
     val = ""
     def __init__(self, *, timeout=10):
