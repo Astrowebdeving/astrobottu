@@ -16,7 +16,7 @@ class Question(models.Model):
     points = models.SmallIntegerField(_("points"))
     difficulty = models.IntegerField(_("Difficulty"), choices=LEVEL, default = 0)
     is_active = models.BooleanField(_("Is Active"), default = True)
-    optional_image = models.BinaryField(_("Image"), blank=True, null=True)
+    optional_image = models.BinaryField(_("Image"), null=True)
     created_at = models.DateTimeField(_("Created"), auto_now=False, auto_now_add=True)
     updated_at = models.DateTimeField(_("Updated"), auto_now=True, auto_now_add=False)
 

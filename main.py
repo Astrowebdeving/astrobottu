@@ -9,12 +9,12 @@ import requests
 from time import sleep
 from discord import Client
 from discord.ui import view
-#intents = discord.Intents.default()
-#intents.message_content = True
+intents = discord.Intents.default()
+intents.message_content = True
 load_dotenv()
-bot = commands.Bot(command_prefix="a!")#, intents=intents)
+bot = commands.Bot(command_prefix="a!", intents=intents)
 #client = Client(intents=intents)
-users = []
+#users = []
 def get_question():
     ps = 0
     qs = ''
