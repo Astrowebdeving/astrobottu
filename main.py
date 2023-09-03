@@ -14,7 +14,7 @@ intents.message_content = True
 load_dotenv()
 bot = commands.Bot(command_prefix="a!", intents=intents)
 #client = Client(intents=intents)
-#users = []
+users = []
 def get_question():
     ps = 0
     qs = ''
