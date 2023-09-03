@@ -19,7 +19,7 @@ class QuestionAdmin(admin.ModelAdmin):
         'title',
         'points',
         'difficulty',
-        'image',
+        'optional_image',
     ]
     list_display = [
         'title',
