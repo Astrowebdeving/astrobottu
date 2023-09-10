@@ -24,6 +24,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = [
         'title',
         'updated_at',
+        'optional_image',
     ]
     inlines = [
         AnswerInlineModel,
