@@ -1,25 +1,25 @@
 import asyncio
 import discord
 from discord.ext import commands
-from discord import guild
 import json
 import os
 from dotenv import load_dotenv
 import requests
-from time import sleep
-from discord import Client
-from discord.ui import view
 intents = discord.Intents.default()
 intents.message_content = True
 load_dotenv()
 bot = commands.Bot(command_prefix="a!", intents=intents)
 #client = Client(intents=intents)
 users = []
+
+# API Configuration - set in .env or defaults to local
+API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
+
 def get_question():
     ps = 0
     qs = ''
     id = 1
-    response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/random/")
+    response = requests.get(f"{API_BASE_URL}/api/random/")
     json_data = json.loads(response.text)
     qs += "Question: \n"
     qs+=json_data[0]['title']+"\n"
@@ -34,7 +34,7 @@ def get_question():
     return(qs,answer, answerval, qt, ps)
 
 def parse_users():
-     response = requests.get("https://mysterious-headland-81216-a50424fcfa47.herokuapp.com/api/allusers/")
+     response = requests.get(f"{API_BASE_URL}/api/allusers/")
      json_data = json.loads(response.text)
      return json_data
 
@@ -129,7 +129,7 @@ class ButtonView(discord.ui.View):
         self.clicked_users = []
 
     @discord.ui.button(label="1",row = 0, style=discord.ButtonStyle.blurple) # or .primary
-    async def blurple_button(self, interaction: discord.Interaction, button: discord.ui.button):   
+    async def blurple_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
         global q
         global a
         global av
@@ -152,7 +152,7 @@ class ButtonView(discord.ui.View):
                   users.append(interaction.user.name)
         await interaction.response.send_message(textsend(text), ephemeral=True)
     @discord.ui.button(label="2",row = 0, style=discord.ButtonStyle.gray) # or .secondary/.grey
-    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.button):   
+    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
         global q
         global a
         global av
@@ -173,7 +173,7 @@ class ButtonView(discord.ui.View):
                 users.append(interaction.user.name)
         await interaction.response.send_message(textsend(text), ephemeral=True)
     @discord.ui.button(label="3",row = 1, style=discord.ButtonStyle.green) # or .success
-    async def green_button(self, interaction: discord.Interaction, button: discord.ui.button):   
+    async def green_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
         global q
         global a
         global av
@@ -194,7 +194,7 @@ class ButtonView(discord.ui.View):
                   users.append(interaction.user.name)
         await interaction.response.send_message(textsend(text),ephemeral=True)
     @discord.ui.button(label="4",row = 1, style=discord.ButtonStyle.red) # or .danger
-    async def red_button(self, interaction: discord.Interaction, button: discord.ui.button):   
+    async def red_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
         global q
         global a
         global av
@@ -215,4 +215,6 @@ class ButtonView(discord.ui.View):
                   users.append(interaction.user.name)
         await interaction.response.send_message(textsend(text),ephemeral=True)
 token = os.getenv('envtoken')
-bot.run("MTEzMjUzNTU5MDcyMjc0NDQ1MA.GmBzk5.yqke1zJpsyk6ku4CRZ36Mim6kLJ_Jk-WCiPS7Q")
+if not token:
+    raise ValueError("Bot token not found! Please set 'envtoken' in your .env file")
+bot.run(token)

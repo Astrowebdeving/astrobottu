@@ -1,8 +1,5 @@
-import django
 from django.db import models
-from django.utils.translation import gettext as _
-django.utils.translation.ugettext = _
-import django.contrib.postgres
+from django.utils.translation import gettext_lazy as _
 
 class Question(models.Model):
     

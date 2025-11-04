@@ -14,7 +14,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 load_dotenv()
-dbpassword = os.getenv('dbpassword')
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-%(cm^*%jk0ql#v3(ram*c2wlu(-k*10-15#*%icw79pgowoe4e"
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', "django-insecure-%(cm^*%jk0ql#v3(ram*c2wlu(-k*10-15#*%icw79pgowoe4e")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -81,11 +81,11 @@ WSGI_APPLICATION = "astrobot.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "dcp140fdl1dd2c",
-        "USER": 'rhuhdredobaluh',
-        "PASSWORD": "1a98b889c4fefeb94b8974f48d8ec122ab40639f458ca289175bd9937a8289fd",
-        "HOST": 'ec2-34-238-201-192.compute-1.amazonaws.com',
-        "PORT": "5432",
+        "NAME": os.getenv('DB_NAME', "dcp140fdl1dd2c"),
+        "USER": os.getenv('DB_USER', 'rhuhdredobaluh'),
+        "PASSWORD": os.getenv('DB_PASSWORD', "1a98b889c4fefeb94b8974f48d8ec122ab40639f458ca289175bd9937a8289fd"),
+        "HOST": os.getenv('DB_HOST', 'ec2-34-238-201-192.compute-1.amazonaws.com'),
+        "PORT": os.getenv('DB_PORT', "5432"),
     }
 }
 
