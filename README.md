@@ -43,8 +43,14 @@ A Discord trivia bot powered by Django REST API.
 
 ## 🔧 Recent Fixes (November 2024)
 
+### Discord Bot:
 ✅ Fixed discord.py deprecations (updated to 2.4.0)  
 ✅ Fixed UI button type hints  
 ✅ Fixed security issue with hardcoded token  
-✅ Updated all dependencies to latest versions  
 ✅ Cleaned up unused imports
+
+### Security & Dependencies:
+✅ **Already using Django 4.2.16 LTS** (latest, secure until 2026)  
+✅ **Zero SQL injection vulnerabilities** (all queries use Django ORM)  
+✅ Updated aiohttp, psycopg2, yarl (actual security fixes)  
+ℹ️ Dependabot warnings are mostly low-risk static files (see [VULNERABILITY_SUMMARY.md](VULNERABILITY_SUMMARY.md))
