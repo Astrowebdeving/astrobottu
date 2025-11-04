@@ -50,7 +50,4 @@ Start:
 ✅ Cleaned up unused imports
 
 ### Security & Dependencies:
-✅ **Already using Django 4.2.16 LTS** (latest, secure until 2026)  
-✅ **Zero SQL injection vulnerabilities** (all queries use Django ORM)  
-✅ Updated aiohttp, psycopg2, yarl (actual security fixes)  
-ℹ️ Dependabot warnings are mostly low-risk static files (see [VULNERABILITY_SUMMARY.md](VULNERABILITY_SUMMARY.md))
+ℹ️ Dependabot warnings are mostly low-risk static files
