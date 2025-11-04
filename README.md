@@ -1,8 +1,8 @@
 # AstroBot Tu 🤖
 
-A Discord trivia bot powered by Django REST API.
+A Discord trivia bot powered by Django REST API. Changes have been made due to deprecation and preparation to move hosting.
 
-## ⚡ Quick Start
+Start:
 
 1. **Install dependencies:**
    ```bash
@@ -41,7 +41,7 @@ A Discord trivia bot powered by Django REST API.
 - `a!info` - Display server information
 - `a!quest` - Start a trivia question
 
-## 🔧 Recent Fixes (November 2024)
+## 🔧 Recent Fixes (November 2025)
 
 ### Discord Bot:
 ✅ Fixed discord.py deprecations (updated to 2.4.0)  
