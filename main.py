@@ -1,220 +1,219 @@
 import asyncio
+import logging
+import os
+from typing import Any
+
+import aiohttp
 import discord
 from discord.ext import commands
-import json
-import os
 from dotenv import load_dotenv
-import requests
+
+
+load_dotenv()
+
+logging.basicConfig(
+    level=os.getenv("LOG_LEVEL", "INFO").upper(),
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+)
+logger = logging.getLogger("astrobot")
+
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000").rstrip("/")
+BOT_API_KEY = os.getenv("BOT_API_KEY", "")
+QUESTION_TIMEOUT_SECONDS = float(os.getenv("QUESTION_TIMEOUT_SECONDS", "10"))
+
 intents = discord.Intents.default()
 intents.message_content = True
-load_dotenv()
 bot = commands.Bot(command_prefix="a!", intents=intents)
-#client = Client(intents=intents)
-users = []
-
-# API Configuration - set in .env or defaults to local
-API_BASE_URL = os.getenv('API_BASE_URL', 'http://localhost:8000')
-
-def get_question():
-    ps = 0
-    qs = ''
-    id = 1
-    response = requests.get(f"{API_BASE_URL}/api/random/")
-    json_data = json.loads(response.text)
-    qs += "Question: \n"
-    qs+=json_data[0]['title']+"\n"
-    qt = json_data[0]['title']
-    ps = json_data[0]['points']
-    for item in json_data[0]['answer']: #loop through the answer section, below is fields"
-        qs += str(id)+". "+item['answer']+'\n'
-        if item['is_correct']:
-            answerval = item['answer']
-            answer = id
-        id+=1
-    return(qs,answer, answerval, qt, ps)
-
-def parse_users():
-     response = requests.get(f"{API_BASE_URL}/api/allusers/")
-     json_data = json.loads(response.text)
-     return json_data
-
-#@bot.command()
-#async def test(ctx, arg):
-#    if not type(arg) is str:
-#        await ctx.send("invalid input")
-#    await ctx.send(arg)
-
-#@client.event
-#async def question(ctx):
-#    q, a = get_question()
-#    await ctx.send(q)
 
 
+class AstroBotAPIError(RuntimeError):
+    """Raised when the question API cannot return usable data."""
 
 
-#@bot.check
-#async def check_user_exists(ctx):
-#     for i in 
-#     if ctx.user
+async def api_get(path: str) -> Any:
+    """Fetch JSON from the Django API without blocking Discord's event loop."""
+    # keep api calls off the discord event loop
+    headers = {"X-API-Key": BOT_API_KEY} if BOT_API_KEY else {}
+    timeout = aiohttp.ClientTimeout(total=5)
+    url = f"{API_BASE_URL}/{path.lstrip('/')}"
+
+    try:
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+            async with session.get(url) as response:
+                response.raise_for_status()
+                return await response.json()
+    except (aiohttp.ClientError, TimeoutError, ValueError) as exc:
+        raise AstroBotAPIError(f"GET {url} failed: {exc}") from exc
 
 
-@bot.command()
-async def info(ctx):
-    print(ctx.guild.id)
-    await ctx.send("ID: {}".format(ctx.guild.id))
+async def get_question() -> tuple[str, int, str, str, int]:
+    """Return a formatted four-answer question from the Django API."""
+    json_data = await api_get("api/random/")
+    if not isinstance(json_data, list) or not json_data:
+        raise AstroBotAPIError("The API has no active questions")
 
-@bot.command()
-async def quest(ctx):
-    #if not check_running():
-    #     return
-    global questv 
-    questv = 1
-    print('good')
-    #if ctx.guild.id != (768486039328391199 or 1132535095480287254): 
-    #     return 
-    serverId = ctx.guild.id
-    print('verygood')
-    global q
-    print("mega good")
-    global a
-    global av
-    global qt
-    print('epic')
-    q, a, av, qt, ps = get_question()
-    print('amazing')
-    print(qt, a)
+    question = json_data[0]
+    answers = question.get("answer", [])
+    if len(answers) != 4:
+        raise AstroBotAPIError("A trivia question must have exactly four answers")
 
-    #view = ButtonView()
-    #await view.wait()
-    #view.add_item(discord.ui.Button(label="URL Button",style=discord.ButtonStyle.link,url="https://github.com/lykn"))
-    await ctx.send(q, view=ButtonView())
-    await asyncio.sleep(10)
-    global users
-    await ctx.send(f"The users: {users} are correct! The answer to {qt} is {av}!", ephemeral=False)
-    questv = 0
-    users = []
+    correct_answers = [
+        (index, item) for index, item in enumerate(answers, start=1) if item.get("is_correct")
+    ]
+    if len(correct_answers) != 1:
+        raise AstroBotAPIError("A trivia question must have exactly one correct answer")
 
-        #def check(m):
-        #        return m.author == message.author and m.content.isdigit()
-                
-        #try: 
-        #    guessmsg = await client.wait_for('message', check=check, timeout = 8.0)
-        #except asyncio.TimeoutError:
-        #    return await message.channel.send('Sorry, you took to long')
-        
-        #if int(guessmsg.content) == a:
-        #    await message.channel.send("You are correct!")
-        #else:
-        #    await message.channel.send("Incorrect!")
-def textCheck(val, a, q):
-        truth = False
-        if val == str(a):
-            truth = True
-            return truth, f"You are correct, {q} is the correct answer."
-        else:
-            return truth, "You are incorrect."
-def textsend(b):
-        return b
-#@bot.check
-#async def check_running():
-#     global questv
-#     if questv ==1:
-#          return False
-#     else:
-#          return True
+    title = str(question["title"])
+    points = int(question["points"])
+    lines = ["Question:", title]
+    lines.extend(
+        f"{index}. {item['answer']}" for index, item in enumerate(answers, start=1)
+    )
+
+    answer_number, correct_answer = correct_answers[0]
+    return (
+        "\n".join(lines),
+        answer_number,
+        str(correct_answer["answer"]),
+        title,
+        points,
+    )
+
+
+async def parse_users() -> Any:
+    """Return users from the existing leaderboard endpoint."""
+    return await api_get("api/allusers/")
+
+
+def textCheck(value: str, answer_number: int, answer_text: str) -> tuple[bool, str]:
+    """Keep the original answer-checking helper with explicit inputs."""
+    if value == str(answer_number):
+        return True, f"Correct. {answer_text} is the answer."
+    return False, "Incorrect."
+
+
+def textsend(message: str) -> str:
+    return message
+
+
 class ButtonView(discord.ui.View):
-    val = ""
-    def __init__(self, *, timeout=10):
+    def __init__(
+        self,
+        *,
+        answer_number: int,
+        answer_text: str,
+        timeout: float = QUESTION_TIMEOUT_SECONDS,
+    ) -> None:
         super().__init__(timeout=timeout)
-        self.clicked_users = []
+        # keep answers isolated to this question message
+        self.answer_number = answer_number
+        self.answer_text = answer_text
+        self.clicked_user_ids: set[int] = set()
+        self.correct_users: list[str] = []
 
-    @discord.ui.button(label="1",row = 0, style=discord.ButtonStyle.blurple) # or .primary
-    async def blurple_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
-        global q
-        global a
-        global av
-        global qt
-        global ps
-        await asyncio.sleep(0.1)
-        val = "1"
+    async def handle_answer(
+        self, interaction: discord.Interaction, value: str
+    ) -> None:
         user_id = interaction.user.id
-        await asyncio.sleep(0.1)
-        if user_id in self.clicked_users:
-            # user has already pressed the button
-            await interaction.response.send_message(content=f"You have already answered.", ephemeral=True)
+        if user_id in self.clicked_user_ids:
+            await interaction.response.send_message(
+                "You have already answered.", ephemeral=True
+            )
             return
-        self.clicked_users.append(user_id)
-        button.disabled=True
-        correctness, text = textCheck(val, a, av)
-        if correctness:
-             global users
-             if (interaction.user.name in users)==False:
-                  users.append(interaction.user.name)
-        await interaction.response.send_message(textsend(text), ephemeral=True)
-    @discord.ui.button(label="2",row = 0, style=discord.ButtonStyle.gray) # or .secondary/.grey
-    async def gray_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
-        global q
-        global a
-        global av
-        global qt
-        global ps
-        val = "2"
-        user_id = interaction.user.id
-        if user_id in self.clicked_users:
-            # user has already pressed the button
-            await interaction.response.send_message(content=f"You have already answered.", ephemeral=True)
-            return
-        self.clicked_users.append(user_id)
-        button.disabled=True
-        correctness, text = textCheck(val, a, av)
-        if correctness:
-            global users
-            if (interaction.user.name in users)==False:
-                users.append(interaction.user.name)
-        await interaction.response.send_message(textsend(text), ephemeral=True)
-    @discord.ui.button(label="3",row = 1, style=discord.ButtonStyle.green) # or .success
-    async def green_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
-        global q
-        global a
-        global av
-        global qt
-        global ps
-        val = "3"
-        user_id = interaction.user.id
-        if user_id in self.clicked_users:
-            # user has already pressed the button
-            await interaction.response.send_message(content=f"You have already answered.", ephemeral=True)
-            return
-        self.clicked_users.append(user_id)
-        button.disabled=True
-        correctness, text = textCheck(val, a, av)
-        if correctness:
-             global users
-             if (interaction.user.name in users)==False:
-                  users.append(interaction.user.name)
-        await interaction.response.send_message(textsend(text),ephemeral=True)
-    @discord.ui.button(label="4",row = 1, style=discord.ButtonStyle.red) # or .danger
-    async def red_button(self, interaction: discord.Interaction, button: discord.ui.Button):   
-        global q
-        global a
-        global av
-        global qt
-        global ps
-        val = "4"
-        user_id = interaction.user.id
-        if user_id in self.clicked_users:
-            # user has already pressed the button
-            await interaction.response.send_message(content=f"You have already answered.", ephemeral=True)
-            return
-        self.clicked_users.append(user_id)
-        button.disabled=True
-        correctness, text = textCheck(val, a, av)
-        if correctness:
-             global users
-             if (interaction.user.name in users)==False:
-                  users.append(interaction.user.name)
-        await interaction.response.send_message(textsend(text),ephemeral=True)
-token = os.getenv('envtoken')
-if not token:
-    raise ValueError("Bot token not found! Please set 'envtoken' in your .env file")
-bot.run(token)
+
+        self.clicked_user_ids.add(user_id)
+        is_correct, message = textCheck(value, self.answer_number, self.answer_text)
+        if is_correct:
+            self.correct_users.append(interaction.user.display_name)
+        await interaction.response.send_message(textsend(message), ephemeral=True)
+
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item,
+    ) -> None:
+        logger.exception("Button interaction failed", exc_info=error)
+        if not interaction.response.is_done():
+            await interaction.response.send_message(
+                "The answer could not be recorded.", ephemeral=True
+            )
+
+    @discord.ui.button(label="1", row=0, style=discord.ButtonStyle.blurple)
+    async def blurple_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await self.handle_answer(interaction, "1")
+
+    @discord.ui.button(label="2", row=0, style=discord.ButtonStyle.gray)
+    async def gray_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await self.handle_answer(interaction, "2")
+
+    @discord.ui.button(label="3", row=1, style=discord.ButtonStyle.green)
+    async def green_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await self.handle_answer(interaction, "3")
+
+    @discord.ui.button(label="4", row=1, style=discord.ButtonStyle.red)
+    async def red_button(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
+        await self.handle_answer(interaction, "4")
+
+
+@bot.event
+async def on_ready() -> None:
+    logger.info("Connected to Discord as %s", bot.user)
+
+
+@bot.command()
+@commands.guild_only()
+async def info(ctx: commands.Context) -> None:
+    await ctx.send(f"Server ID: {ctx.guild.id}")
+
+
+@bot.command()
+@commands.guild_only()
+async def quest(ctx: commands.Context) -> None:
+    try:
+        question, answer_number, answer_text, title, points = await get_question()
+    except AstroBotAPIError as exc:
+        logger.warning("Question request failed: %s", exc)
+        await ctx.send("No question is available. Check the API and question data.")
+        return
+
+    view = ButtonView(answer_number=answer_number, answer_text=answer_text)
+    message = await ctx.send(question, view=view)
+    # keep the round length fixed even after button interactions
+    await asyncio.sleep(QUESTION_TIMEOUT_SECONDS)
+    view.stop()
+
+    for item in view.children:
+        item.disabled = True
+    try:
+        await message.edit(view=view)
+    except discord.HTTPException:
+        logger.warning("Could not disable buttons on message %s", message.id)
+
+    if view.correct_users:
+        names = ", ".join(view.correct_users)
+        result = f"Correct: {names}. The answer to {title} is {answer_text} ({points} points)."
+    else:
+        result = f"No correct answers. The answer to {title} is {answer_text}."
+    await ctx.send(result)
+
+
+def run_bot() -> None:
+    token = os.getenv("DISCORD_BOT_TOKEN") or os.getenv("envtoken")
+    if not token:
+        raise RuntimeError(
+            "Set DISCORD_BOT_TOKEN in the environment (legacy envtoken is also accepted)"
+        )
+    bot.run(token, log_handler=None)
+
+
+if __name__ == "__main__":
+    run_bot()

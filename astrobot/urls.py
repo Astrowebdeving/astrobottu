@@ -16,11 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from .astro.views import RandomQuestion, TopUsers, AllUsers
+from .astro.views import AllUsers, RandomQuestion, TopUsers
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path('api/random/', RandomQuestion.as_view(), name = 'random'),
-    path('api/topusers/', TopUsers.as_view()),
-    path('api/allusers/', AllUsers.as_view())
+    path("api/random/", RandomQuestion.as_view(), name="random"),
+    path("api/topusers/", TopUsers.as_view(), name="top-users"),
+    path("api/allusers/", AllUsers.as_view(), name="all-users"),
 ]

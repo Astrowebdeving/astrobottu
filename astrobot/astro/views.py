@@ -1,29 +1,40 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+import secrets
+
+from django.conf import settings
 from rest_framework.response import Response
+from rest_framework.status import HTTP_403_FORBIDDEN
+from rest_framework.views import APIView
+
 from .models import Question, Qusers
 from .serializers import RandomQuestionSerializer, QusersReturn
+
+
 class RandomQuestion(APIView):
     def get(self, request, format=None, **kwargs):
-        question = Question.objects.filter().order_by('?')[:1]
+        supplied_key = request.headers.get("X-API-Key", "")
+        if settings.BOT_API_KEY and not secrets.compare_digest(
+            supplied_key, settings.BOT_API_KEY
+        ):
+            return Response(
+                {"detail": "Valid X-API-Key header required."},
+                status=HTTP_403_FORBIDDEN,
+            )
+
+        # inactive questions stay available in admin but not in games
+        question = Question.objects.filter(is_active=True).order_by("?")[:1]
         serializer = RandomQuestionSerializer(question, many=True)
         return Response(serializer.data)
+
+
 class AllUsers(APIView):
     def get(self, request, format=None, **kwargs):
-        users = Qusers.objects.filter().order_by("totalpoints")
-        serializerAU = QusersReturn(users, many = True)
-        return Response(serializerAU.data)
+        users = Qusers.objects.order_by("-totalpoints", "username")
+        serializer = QusersReturn(users, many=True)
+        return Response(serializer.data)
+
+
 class TopUsers(APIView):
     def get(self, request, format=None, **kwargs):
-        users = Qusers.objects.filter().order_by("totalpoints")[:10]
-        serializerTU = QusersReturn(users,many = True)
-        return Response(serializerTU.data)
-    
-def upload_image(request):
-    if request.method == 'POST':
-        image = request.FILES.get('image')
-        if image:
-            binary_data = image.read()  # Read the binary data from the image file
-            Question.objects.create(optional_image=binary_data)
-    images = Question.objects.all()
-    return render(request, 'image_upload.html', {'images': images})
+        users = Qusers.objects.order_by("-totalpoints", "username")[:10]
+        serializer = QusersReturn(users, many=True)
+        return Response(serializer.data)

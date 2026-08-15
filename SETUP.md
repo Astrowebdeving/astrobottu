@@ -1,131 +1,81 @@
-# AstroBot Setup Guide 🤖
+# Discord and application setup
 
-## Changes Made to Fix Deprecations
+## Discord application
 
-### ✅ Fixed Issues:
+1. Create or select an application in the [Discord Developer Portal](https://discord.com/developers/applications).
+2. Add a bot user and copy its token into `.env` as `DISCORD_BOT_TOKEN`.
+3. Under **Bot > Privileged Gateway Intents**, enable **Message Content Intent**.
+4. Generate an install URL with the `bot` scope. Grant `View Channels`, `Send Messages`, and `Read Message History` in the target server.
 
-1. **Type Hint Errors (CRITICAL FIX)**
-   - Changed `discord.ui.button` → `discord.ui.Button` (capital B)
-   - This was causing the bot to crash on button interactions
-   - Fixed in all 4 button handlers
+The code uses prefix commands through `commands.Bot`, so Message Content is required. Server Members and Presence intents are not used.
 
-2. **Security Fix**
-   - Removed hardcoded bot token (security risk!)
-   - Now properly uses environment variable from .env file
-   - Added validation to ensure token exists before running
+## Environment
 
-3. **Dependency Updates**
-   - Updated `discord.py` from 2.3.1 → 2.4.0
-   - Updated Django from 4.2.3 → 4.2.16 (security patches)
-   - Updated all other dependencies to latest stable versions
-   - Removed `asyncio==3.4.3` (conflicts with Python's built-in asyncio)
-
-4. **Code Cleanup**
-   - Removed unused imports: `guild`, `Client`, `view`, `sleep`
-   - Cleaner, more maintainable code
-
-## 🚀 How to Run the Bot
-
-### 1. Install Dependencies
 ```bash
-pip install -r requirements.txt
+cp env.template .env
 ```
 
-### 2. Configure Environment Variables
-Create a `.env` file in the project root with:
-```
-# Discord Bot Token (REQUIRED)
-envtoken=YOUR_DISCORD_BOT_TOKEN_HERE
+For local development, the minimum useful values are:
 
-# Django Settings (OPTIONAL - has defaults)
-DJANGO_SECRET_KEY=your-secret-key-here
-
-# Database Settings (OPTIONAL - has defaults)
-DB_NAME=your_database_name
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_HOST=your_database_host
-DB_PORT=5432
+```dotenv
+DISCORD_BOT_TOKEN=replace-me
+API_BASE_URL=http://localhost:8000
+DJANGO_DEBUG=true
 ```
 
-**To get your Discord bot token:**
-- Go to https://discord.com/developers/applications
-- Select your application (or create one)
-- Go to "Bot" section
-- Copy the token
+For a deployed API, generate independent values for the Django secret and bot/API shared key:
 
-**Note:** Database and Django settings have defaults configured, so they're optional unless you want to override them.
+```bash
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
 
-### 3. Enable Required Intents
-In the Discord Developer Portal:
-- Go to your application
-- Navigate to "Bot" section
-- Enable these **Privileged Gateway Intents**:
-  - ✅ MESSAGE CONTENT INTENT (required for `intents.message_content`)
-  - ✅ SERVER MEMBERS INTENT (if you need member data)
+Set the second value as `BOT_API_KEY` on both processes. The bot sends it in `X-API-Key`; Django checks it before returning the answer-bearing question payload.
 
-### 4. Run the Bot
+## Question data contract
+
+Each question used by `a!quest` must have:
+
+- `is_active` enabled;
+- exactly four related answers;
+- exactly one answer marked correct;
+- an integer point value.
+
+Invalid records stay editable in Django admin, but the bot rejects them rather than rendering a broken game.
+
+## Run order
+
+```bash
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py runserver
+```
+
+After adding a valid question at [http://localhost:8000/admin/](http://localhost:8000/admin/), start the bot in another terminal:
+
 ```bash
 python main.py
 ```
 
-## 🎮 Bot Commands
+## API endpoints
 
-- `a!info` - Shows server ID
-- `a!quest` - Starts a trivia question with 4 answer buttons
+| Path | Method | Description |
+| --- | --- | --- |
+| `/api/random/` | GET | One random active question; checks `X-API-Key` when configured |
+| `/api/topusers/` | GET | Ten users ordered by points descending |
+| `/api/allusers/` | GET | All users ordered by points descending |
+| `/admin/` | GET/POST | Authenticated Django administration |
 
-## 📊 Django API Setup
+## Common failures
 
-The bot connects to a Django REST API for questions. To run the Django server:
+`a!quest` does not respond:
 
-```bash
-# Run migrations
-python manage.py migrate
+- confirm Message Content Intent is enabled in the portal and in code;
+- confirm the bot can view and send messages in the channel;
+- confirm the command prefix is `a!`.
 
-# Create superuser (optional)
-python manage.py createsuperuser
+The bot reports that no question is available:
 
-# Run development server
-python manage.py runserver
-```
-
-## 🔧 Troubleshooting
-
-### Bot doesn't respond to commands:
-- Ensure MESSAGE CONTENT INTENT is enabled in Discord Developer Portal
-- Check that your bot has proper permissions in the server
-- Verify the bot token is correct in `.env`
-
-### Button interactions fail:
-- This should be fixed now with the `discord.ui.Button` type hint corrections
-- Ensure you're using discord.py 2.4.0 or higher
-
-### Database errors:
-- Run `python manage.py migrate` to set up the database
-- Check that PostgreSQL is running (if using production settings)
-
-## 📝 Notes
-
-- The bot uses a 10-second timeout for questions
-- Users can only answer once per question
-- Points system is integrated with the Django backend
-
-## ⚠️ IMPORTANT: API Endpoint No Longer Active
-
-**The prior Heroku endpoint was closed, as well as the account.** This code now can be implemented with other options:
-
-**You have 3 options:**
-
-1. **Run Django API locally** (Recommended for testing)
-   - See [LOCAL_SETUP.md](LOCAL_SETUP.md) for detailed instructions
-   - Default: `http://localhost:8000`
-
-2. **Deploy to a new Heroku app**
-   - Follow the deployment guide in [LOCAL_SETUP.md](LOCAL_SETUP.md)
-
-3. **Deploy to another service** (Railway, Render, DigitalOcean, etc.)
-
-The API endpoint is now configurable via the `API_BASE_URL` environment variable in your `.env` file.
-
-
-
+- check that `python manage.py runserver` is still running;
+- check that an active question has four answers and one correct answer;
+- confirm both processes have the same non-empty `BOT_API_KEY` in production.
